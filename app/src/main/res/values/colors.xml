@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="git_primary">#FF24292E</color>
     <color name="git_primary_variant">#1C2023</color>
+    <color name="color_hint">#9F9F9F</color>
 </resources>
