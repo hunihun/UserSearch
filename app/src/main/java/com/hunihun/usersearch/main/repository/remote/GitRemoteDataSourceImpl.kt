@@ -14,7 +14,7 @@ class GitRemoteDataSourceImpl @Inject constructor(
     private val retrofit: RetrofitImpl
 ): GitRemoteDataSource {
     override fun searchUser(query: String?, page: Int): Single<ResponseGitHubUserData> {
-        return retrofit.searchUser(query, page)
+        return retrofit.searchUser("$query in:login", page)
     }
 }
 

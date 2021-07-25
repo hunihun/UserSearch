@@ -43,6 +43,7 @@ class UserSearchViewModel @Inject constructor(
                 _userList.value = tempList
                 finishLoading()
             }, {
+                Log.d("jsh","error >>> " + it.message)
                 _error.value = it.message
                 finishLoading()
             }))
