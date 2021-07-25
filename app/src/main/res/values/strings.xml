@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">UserSearch</string>
     <string name="git_token">token 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</string>
+    <string name="input_text">검색어를 입력해 주세요.</string>
 </resources>
