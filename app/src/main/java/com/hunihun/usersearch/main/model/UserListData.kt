@@ -1,6 +1,6 @@
 package com.hunihun.usersearch.main.model
 
-data class UserList(
+data class UserListData(
     val avatar_url: String,
     val events_url: String,
     val followers_url: String,

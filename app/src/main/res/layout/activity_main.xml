@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:bind="http://schemas.android.com/tools">
 
     <data>
+        <import type="android.view.View"/>
         <variable
             name="vm"
-            type="com.hunihun.usersearch.main.MainViewModel" />
+            type="com.hunihun.usersearch.main.UserSearchViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/white"
-        tools:context=".main.MainActivity">
+        tools:context=".main.UserSearchActivity">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_search"
@@ -49,24 +51,40 @@
                 app:layout_constraintLeft_toRightOf="@+id/et_search_word" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <FrameLayout
-            android:id="@+id/fl_search_list"
+        <RelativeLayout
+            android:id="@+id/rl_search_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/cl_search">
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@+id/cl_search"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_search_list"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        </FrameLayout>
+            <ProgressBar
+                android:id="@+id/pb_progressbar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="@{vm.progressVisible}"
+                android:layout_centerInParent="true"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/rv_search_list"
+                android:background="@color/git_primary"/>
+
+        </RelativeLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_repo_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:text="Hello World!"
+            android:visibility="gone"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
