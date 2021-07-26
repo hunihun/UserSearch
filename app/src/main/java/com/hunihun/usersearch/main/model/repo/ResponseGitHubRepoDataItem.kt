@@ -1,7 +1,5 @@
 package com.hunihun.usersearch.main.model.repo
 
-import com.hunihun.usersearch.main.model.repo.Owner
-
 data class ResponseGitHubRepoDataItem(
         val archive_url: String,
         val archived: Boolean,

@@ -1,6 +1,7 @@
 package com.hunihun.usersearch.main
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -8,14 +9,26 @@ import androidx.recyclerview.widget.RecyclerView
 import com.hunihun.usersearch.BaseActivity
 import com.hunihun.usersearch.R
 import com.hunihun.usersearch.databinding.ActivityMainBinding
+import com.hunihun.usersearch.main.adapter.RepoAdapter
 import com.hunihun.usersearch.main.adapter.UserAdapter
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>(R.layout.activity_main) {
     override val vm : UserSearchViewModel by viewModels()
-    private val userAdapter = UserAdapter {
+    private val userAdapter by lazy {
+        UserAdapter {
+            binding.rlSearchList.visibility = View.GONE
+            binding.rvRepoList.visibility = View.VISIBLE
+            clearDataList()
+            vm.searchRepo(it)
+        }
+    }
 
+    private val repoAdapter by lazy {
+        RepoAdapter {
+
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +41,12 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
     private fun initAdapter() {
         binding.rvSearchList.run {
             adapter = userAdapter
+            setHasFixedSize(true)
+            addOnScrollListener(scrollListener)
+        }
+
+        binding.rvRepoList.run {
+            adapter = repoAdapter
             setHasFixedSize(true)
             addOnScrollListener(scrollListener)
         }
@@ -53,11 +72,16 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
                 Toast.makeText(this, R.string.error_403, Toast.LENGTH_SHORT).show()
             }
         }
+
+        vm.repoList.observe(this) {
+            if (it.isEmpty()) return@observe
+            repoAdapter.addList(it)
+        }
     }
 
     private fun clearDataList() {
         vm.page.initialize()
-        vm.tempList.clear()
+        vm.tempUserList.clear()
         userAdapter.clearList()
     }
 

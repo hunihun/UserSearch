@@ -2,11 +2,11 @@ package com.hunihun.usersearch.main
 
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.hunihun.usersearch.BaseViewModel
-import com.hunihun.usersearch.main.model.UserListData
+import com.hunihun.usersearch.main.model.repo.ResponseGitHubRepoDataItem
+import com.hunihun.usersearch.main.model.user.UserListData
 import com.hunihun.usersearch.main.repository.UserSearchRepository
 import com.hunihun.usersearch.util.Pagination
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,12 +18,16 @@ import javax.inject.Inject
 class UserSearchViewModel @Inject constructor(
     private val userSearchRepository: UserSearchRepository
 ): BaseViewModel() {
+    val tempUserList = mutableListOf<UserListData>()
+    val tempRepoList = mutableListOf<ResponseGitHubRepoDataItem>()
     val searchWord = MutableLiveData("")
-    val tempList = mutableListOf<UserListData>()
     var page = Pagination()
 
     private val _userList = MutableLiveData<List<UserListData>>()
     val userList: LiveData<List<UserListData>> = _userList
+
+    private val _repoList = MutableLiveData<List<ResponseGitHubRepoDataItem>>()
+    val repoList: LiveData<List<ResponseGitHubRepoDataItem>> = _repoList
 
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
@@ -35,18 +39,39 @@ class UserSearchViewModel @Inject constructor(
                 if (it.items.isEmpty()) {
                     page.isMorePage = false
                 }
-                tempList.addAll(it.items)
+                tempUserList.addAll(it.items)
             }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.newThread())
             .subscribe({
-                _userList.value = tempList
+                _userList.value = tempUserList
                 finishLoading()
             }, {
                 Log.d("jsh","error >>> " + it.message)
                 _error.value = it.message
                 finishLoading()
             }))
+    }
+
+    fun searchRepo(userId: String) {
+        startLoading()
+        addDisposable(userSearchRepository.searchRepo(userId, page.pageNo)
+                .map {
+                    if (it.isEmpty()) {
+                        page.isMorePage = false
+                    }
+                    tempRepoList.addAll(it.toList())
+                }
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.newThread())
+                .subscribe({
+                    Log.d("jsh","response >>> " + it.toString())
+                    _repoList.value = tempRepoList
+                    finishLoading()
+                }, {
+                    Log.d("jsh","error >>> " + it.message)
+                    finishLoading()
+                }))
     }
 
     private fun startLoading() {
