@@ -1,4 +1,4 @@
-package com.hunihun.usersearch.main.model
+package com.hunihun.usersearch.main.model.user
 
 data class UserListData(
     val avatar_url: String,
