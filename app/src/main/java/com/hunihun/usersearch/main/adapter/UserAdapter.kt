@@ -7,7 +7,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.hunihun.usersearch.R
 import com.hunihun.usersearch.databinding.UserItemBinding
-import com.hunihun.usersearch.main.model.UserListData
+import com.hunihun.usersearch.main.model.user.UserListData
 
 class UserAdapter(private val itemClickListener: (userName: String) -> Unit): RecyclerView.Adapter<UserAdapter.UserViewHolder>() {
     private val itemList: ArrayList<UserListData> = ArrayList()
@@ -53,7 +53,6 @@ class UserAdapter(private val itemClickListener: (userName: String) -> Unit): Re
         }
 
         fun bind(userList: UserListData) {
-            Log.d("jsh", "userList.login >>> " + userList.login)
             binding.run {
                 data = userList.login
                 executePendingBindings()
