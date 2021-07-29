@@ -51,43 +51,8 @@ fun bindUpdateTime(view: TextView, time: String) {
 
     //요청시간을 Date로 parsing 후 time가져오기
     val reqDate = serverDateFormat.parse(time)
-    val reqDateTime = reqDate.time
 
     val date = curDateFormat.format(reqDate)
-    val curDateString = curDateFormat.format(curDate)
 
-    //현재시간을 요청시간의 형태로 format 후 time 가져오기
-    curDate = curDateFormat.parse(curDateFormat.format(curDate))!!
-    val curDateTime = curDate.time
-
-    //분으로 표현
-    val minute = (curDateTime - reqDateTime) / 60000
-
-    if (curDateString.substring(0, 8) == date.substring(0, 8)) {
-        when {
-            date.substring(8, 10).toInt() > 12 -> {
-                view.text = "오후 " + (date.substring(8, 10).toInt()-12) + ":" + date.substring(10, 12)
-            }
-            date.substring(8, 10).toInt() == 12 -> {
-                view.text = "오후 12:" + date.substring(10, 12)
-            }
-            else -> {
-                view.text = "오전 " + date.substring(8, 10) + ":" + date.substring(10, 12)
-            }
-        }
-    } else if ((curDateString.substring(0, 6) == date.substring(0, 6)) && (curDateString.substring(6, 8).toInt() - date.substring(6, 8).toInt() == 1)) {
-        view.text = "어제"
-    } else if ((curDateString.substring(0, 4) == date.substring(0, 4)) && (curDateString.substring(4, 6).toInt() - date.substring(4, 6).toInt() == 1)) {
-        if (minute < 1440) {
-            view.text = "어제"
-        } else {
-            view.text = date.substring(4, 6).toInt().toString() + "월 " + date.substring(6, 8).toInt().toString() + "일"
-        }
-    } else {
-        if (minute < 1440) {
-            view.text = "어제"
-        } else {
-            view.text = date.substring(4, 6).toInt().toString() + "월 " + date.substring(6, 8).toInt().toString() + "일"
-        }
-    }
+    view.text = "Last Push Date: " + date.substring(0, 4).toInt().toString() + "." + date.substring(4, 6).toInt().toString() + "." + date.substring(6, 8).toInt().toString()
 }
