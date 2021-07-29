@@ -19,7 +19,7 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
     private val userAdapter by lazy {
         UserAdapter {
             binding.rlSearchList.visibility = View.GONE
-            binding.rvRepoList.visibility = View.VISIBLE
+            binding.clProfile.visibility = View.VISIBLE
             clearDataList()
             vm.searchRepo(it)
         }
