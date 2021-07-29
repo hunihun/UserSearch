@@ -18,10 +18,9 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
     override val vm : UserSearchViewModel by viewModels()
     private val userAdapter by lazy {
         UserAdapter {
-            binding.rlSearchList.visibility = View.GONE
-            binding.clProfile.visibility = View.VISIBLE
+            binding.flSearchList.visibility = View.GONE
             clearDataList()
-            vm.searchRepo(it)
+            vm.getUserData(it)
         }
     }
 
@@ -65,6 +64,7 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
         vm.userList.observe(this) {
             if (it.isEmpty()) return@observe
             userAdapter.addList(it)
+            binding.flSearchList.visibility = View.VISIBLE
         }
 
         vm.error.observe(this) {
@@ -73,8 +73,8 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
             }
         }
 
-        vm.repoList.observe(this) {
-            if (it.isEmpty()) return@observe
+        vm.userDetailData.observe(this) {
+            if (it == null) return@observe
             repoAdapter.addList(it)
         }
     }

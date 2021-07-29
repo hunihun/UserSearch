@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import com.hunihun.usersearch.BaseViewModel
 import com.hunihun.usersearch.main.model.repo.ResponseGitHubRepoDataItem
 import com.hunihun.usersearch.main.model.user.ResponseUserDetailData
+import com.hunihun.usersearch.main.model.user.UserDetailData
 import com.hunihun.usersearch.main.model.user.UserListData
 import com.hunihun.usersearch.main.repository.UserSearchRepository
 import com.hunihun.usersearch.util.Pagination
@@ -21,18 +22,15 @@ class UserSearchViewModel @Inject constructor(
     private val userSearchRepository: UserSearchRepository
 ): BaseViewModel() {
     val tempUserList = mutableListOf<UserListData>()
-    val tempRepoList = mutableListOf<ResponseGitHubRepoDataItem>()
+    val tempUserDetailDataList = mutableListOf<UserDetailData>()
     val searchWord = MutableLiveData("")
     var page = Pagination()
 
     private val _userList = MutableLiveData<List<UserListData>>()
     val userList: LiveData<List<UserListData>> = _userList
 
-    private val _repoList = MutableLiveData<List<ResponseGitHubRepoDataItem>>()
-    val repoList: LiveData<List<ResponseGitHubRepoDataItem>> = _repoList
-
-    private val _userData = MutableLiveData<ResponseUserDetailData>()
-    val userData: LiveData<ResponseUserDetailData> = _userData
+    private val _userDetailData = MutableLiveData<List<UserDetailData>>()
+    val userDetailData: LiveData<List<UserDetailData>> = _userDetailData
 
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
@@ -61,56 +59,75 @@ class UserSearchViewModel @Inject constructor(
     fun searchRepo(userId: String) {
         startLoading()
         addDisposable(userSearchRepository.searchRepo(userId, page.pageNo)
-                .map {
-                    if (it.isEmpty()) {
-                        page.isMorePage = false
-                    }
-                    tempRepoList.addAll(it.toList())
+            .map {
+                if (it.isEmpty()) {
+                    page.isMorePage = false
                 }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.newThread())
-                .subscribe({
-                    Log.d("jsh","response >>> " + it.toString())
-                    _repoList.value = tempRepoList
-                    finishLoading()
-                }, {
-                    Log.d("jsh","error >>> " + it.message)
-                    finishLoading()
-                }))
+                it.map { data ->
+                    val userDetailData = UserDetailData(
+                        repoName = data.name,
+                        starCount = data.stargazers_count,
+                        pushedAt = data.pushed_at
+                    )
+                    tempUserDetailDataList.add(userDetailData)
+                }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(Schedulers.newThread())
+            .subscribe({
+                _userDetailData.value = tempUserDetailDataList
+                finishLoading()
+            }, {
+                Log.d("jsh","error >>> " + it.message)
+                finishLoading()
+            }))
     }
 
     fun getUserData(userId: String) {
         startLoading()
-        addDisposable(
-            Observable.zip(
-                // first api = search repository
-                userSearchRepository.searchRepo(userId, page.pageNo)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .map {
-                        if (it.isEmpty()) {
-                            page.isMorePage = false
-                        }
-                        tempRepoList.addAll(it.toList())
+        addDisposable(Observable.zip(
+            // first api = search repository
+            userSearchRepository.searchRepo(userId, page.pageNo)
+                .observeOn(AndroidSchedulers.mainThread())
+                .map {
+                    if (it.isEmpty()) {
+                        page.isMorePage = false
                     }
-                    .toObservable(),
-                // second api = get user profile data
-                userSearchRepository.getUserProfile(userId)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .toObservable(),
-                // result
-                { _: Boolean, secondResult: ResponseUserDetailData ->
-                    _repoList.value = tempRepoList
-                    _userData.value = secondResult
-                    finishLoading()
+                    it.map { data ->
+                        val userDetailData = UserDetailData(
+                            repoName = data.name,
+                            starCount = data.stargazers_count,
+                            pushedAt = data.pushed_at
+                        )
+                        tempUserDetailDataList.add(userDetailData)
+                    }
                 }
-            ).subscribeOn(Schedulers.newThread())
-                .onErrorReturn {
-                    Log.d("jsh","it.message >>> " + it.message)
-                    _error.value = it.message
-                    finishLoading()
+                .toObservable(),
+            // second api = get user profile data
+            userSearchRepository.getUserProfile(userId)
+                .map {
+                    val userDetailData = UserDetailData(
+                        bio = it.bio,
+                        login = it.login,
+                        name = it.name,
+                        profilePath = it.avatar_url
+                    )
+                    tempUserDetailDataList.add(userDetailData)
                 }
-                .subscribe()
-        )
+                .observeOn(AndroidSchedulers.mainThread())
+                .toObservable(),
+            // result
+            { _: List<Boolean>, _: Boolean ->
+                _userDetailData.value = tempUserDetailDataList
+                finishLoading()
+            }
+        ).subscribeOn(Schedulers.newThread())
+            .onErrorReturn {
+                Log.d("jsh", "it.message >>> " + it.message)
+                _error.value = it.message
+                finishLoading()
+            }
+            .subscribe())
     }
 
     private fun startLoading() {

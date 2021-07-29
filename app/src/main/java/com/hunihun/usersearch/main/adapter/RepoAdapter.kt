@@ -8,11 +8,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.hunihun.usersearch.R
 import com.hunihun.usersearch.databinding.RepoItemBinding
 import com.hunihun.usersearch.main.model.repo.ResponseGitHubRepoDataItem
+import com.hunihun.usersearch.main.model.user.UserDetailData
 import com.hunihun.usersearch.main.model.user.UserListData
 import java.io.PrintStream
 
 class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): RecyclerView.Adapter<RepoAdapter.RepoViewHolder>() {
-    private val itemList: ArrayList<ResponseGitHubRepoDataItem> = ArrayList()
+    private val itemList: ArrayList<UserDetailData> = ArrayList()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepoViewHolder {
         val binding = DataBindingUtil.inflate<RepoItemBinding>(
@@ -32,7 +33,7 @@ class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): Re
         return itemList.size
     }
 
-    fun addList(list: List<ResponseGitHubRepoDataItem>) {
+    fun addList(list: List<UserDetailData>) {
         itemList.clear()
         itemList.addAll(list)
         notifyDataSetChanged()
@@ -50,7 +51,7 @@ class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): Re
             }
         }
 
-        fun bind(item: ResponseGitHubRepoDataItem) {
+        fun bind(item: UserDetailData) {
             Log.d("jsh","name >>> " + item.name)
             binding.run {
                 data = item
