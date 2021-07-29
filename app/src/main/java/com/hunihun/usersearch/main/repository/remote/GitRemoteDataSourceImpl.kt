@@ -2,6 +2,7 @@ package com.hunihun.usersearch.main.repository.remote
 
 import com.hunihun.usersearch.main.model.repo.ResponseGitHubRepoData
 import com.hunihun.usersearch.main.model.user.ResponseGitHubUserListData
+import com.hunihun.usersearch.main.model.user.ResponseUserDetailData
 import com.hunihun.usersearch.retrofit.RetrofitImpl
 import dagger.Binds
 import dagger.Module
@@ -20,6 +21,10 @@ class GitRemoteDataSourceImpl @Inject constructor(
 
     override fun searchRepo(userId: String?, page: Int): Single<ResponseGitHubRepoData> {
         return retrofit.searchRepo(userId, page)
+    }
+
+    override fun getUserProfile(userId: String?): Single<ResponseUserDetailData> {
+        return retrofit.getUserProfile(userId)
     }
 }
 

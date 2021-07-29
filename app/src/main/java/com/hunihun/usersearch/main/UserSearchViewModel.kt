@@ -6,10 +6,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.hunihun.usersearch.BaseViewModel
 import com.hunihun.usersearch.main.model.repo.ResponseGitHubRepoDataItem
+import com.hunihun.usersearch.main.model.user.ResponseUserDetailData
 import com.hunihun.usersearch.main.model.user.UserListData
 import com.hunihun.usersearch.main.repository.UserSearchRepository
 import com.hunihun.usersearch.util.Pagination
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
@@ -28,6 +30,9 @@ class UserSearchViewModel @Inject constructor(
 
     private val _repoList = MutableLiveData<List<ResponseGitHubRepoDataItem>>()
     val repoList: LiveData<List<ResponseGitHubRepoDataItem>> = _repoList
+
+    private val _userData = MutableLiveData<ResponseUserDetailData>()
+    val userData: LiveData<ResponseUserDetailData> = _userData
 
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
@@ -72,6 +77,40 @@ class UserSearchViewModel @Inject constructor(
                     Log.d("jsh","error >>> " + it.message)
                     finishLoading()
                 }))
+    }
+
+    fun getUserData(userId: String) {
+        startLoading()
+        addDisposable(
+            Observable.zip(
+                // first api = search repository
+                userSearchRepository.searchRepo(userId, page.pageNo)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .map {
+                        if (it.isEmpty()) {
+                            page.isMorePage = false
+                        }
+                        tempRepoList.addAll(it.toList())
+                    }
+                    .toObservable(),
+                // second api = get user profile data
+                userSearchRepository.getUserProfile(userId)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .toObservable(),
+                // result
+                { _: Boolean, secondResult: ResponseUserDetailData ->
+                    _repoList.value = tempRepoList
+                    _userData.value = secondResult
+                    finishLoading()
+                }
+            ).subscribeOn(Schedulers.newThread())
+                .onErrorReturn {
+                    Log.d("jsh","it.message >>> " + it.message)
+                    _error.value = it.message
+                    finishLoading()
+                }
+                .subscribe()
+        )
     }
 
     private fun startLoading() {

@@ -2,6 +2,7 @@ package com.hunihun.usersearch.retrofit
 
 import com.hunihun.usersearch.main.model.repo.ResponseGitHubRepoData
 import com.hunihun.usersearch.main.model.user.ResponseGitHubUserListData
+import com.hunihun.usersearch.main.model.user.ResponseUserDetailData
 import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -14,4 +15,7 @@ interface RetrofitImpl {
 
     @GET("users/{userId}/repos")
     fun searchRepo(@Path("userId") userId: String?, @Query("page") page: Int): Single<ResponseGitHubRepoData>
+
+    @GET("users/{userId}")
+    fun getUserProfile(@Path("userId") userId: String?): Single<ResponseUserDetailData>
 }
