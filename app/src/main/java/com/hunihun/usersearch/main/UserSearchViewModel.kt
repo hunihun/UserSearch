@@ -112,12 +112,12 @@ class UserSearchViewModel @Inject constructor(
                         name = it.name,
                         profilePath = it.avatar_url
                     )
-                    tempUserDetailDataList.add(userDetailData)
+                    tempUserDetailDataList.add(0, userDetailData)
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .toObservable(),
             // result
-            { _: List<Boolean>, _: Boolean ->
+            { _: List<Boolean>, _: Unit ->
                 _userDetailData.value = tempUserDetailDataList
                 finishLoading()
             }
