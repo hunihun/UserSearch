@@ -1,32 +1,58 @@
 package com.hunihun.usersearch.main.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 import com.hunihun.usersearch.R
 import com.hunihun.usersearch.databinding.RepoItemBinding
-import com.hunihun.usersearch.main.model.repo.ResponseGitHubRepoDataItem
+import com.hunihun.usersearch.databinding.UserProfileItemBinding
 import com.hunihun.usersearch.main.model.user.UserDetailData
-import com.hunihun.usersearch.main.model.user.UserListData
-import java.io.PrintStream
 
-class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): RecyclerView.Adapter<RepoAdapter.RepoViewHolder>() {
+class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val itemList: ArrayList<UserDetailData> = ArrayList()
+    private lateinit var binding: ViewDataBinding
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RepoViewHolder {
-        val binding = DataBindingUtil.inflate<RepoItemBinding>(
-                LayoutInflater.from(parent.context),
-                R.layout.repo_item,
-                parent,
-                false
-        )
-        return RepoViewHolder(binding, itemClickListener)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+
+        return when (viewType) {
+            HEADER -> {
+                binding = DataBindingUtil.inflate<RepoItemBinding>(
+                    LayoutInflater.from(parent.context),
+                    R.layout.user_profile_item,
+                    parent,
+                    false
+                )
+                HeaderViewHolder()
+            }
+
+            else -> {
+                binding = DataBindingUtil.inflate<RepoItemBinding>(
+                    LayoutInflater.from(parent.context),
+                    R.layout.repo_item,
+                    parent,
+                    false
+                )
+                RepoViewHolder(itemClickListener)
+            }
+        }
     }
 
-    override fun onBindViewHolder(holder: RepoViewHolder, position: Int) {
-        holder.bind(itemList[position])
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when(holder.itemViewType) {
+            HEADER -> {
+                (holder as HeaderViewHolder).bind(itemList[position])
+            }
+
+            BODY -> {
+                (holder as RepoViewHolder).bind(itemList[position])
+            }
+        }
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) HEADER else BODY
     }
 
     override fun getItemCount(): Int {
@@ -40,9 +66,9 @@ class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): Re
     }
 
     inner class RepoViewHolder(
-            private val binding: RepoItemBinding,
             private val itemClickListener: (link: String) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
+        private var repoBinding: RepoItemBinding = binding as RepoItemBinding
         private lateinit var link: String
 
         init {
@@ -52,11 +78,26 @@ class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): Re
         }
 
         fun bind(item: UserDetailData) {
-            Log.d("jsh","name >>> " + item.name)
-            binding.run {
+            repoBinding.run {
                 data = item
                 executePendingBindings()
             }
         }
+    }
+
+    inner class HeaderViewHolder : RecyclerView.ViewHolder(binding.root) {
+        var userProfileItemBinding: UserProfileItemBinding = binding as UserProfileItemBinding
+
+        fun bind(item: UserDetailData) {
+            userProfileItemBinding.run {
+                data = item
+                executePendingBindings()
+            }
+        }
+    }
+
+    companion object {
+        const val HEADER = 1
+        const val BODY = 2
     }
 }
