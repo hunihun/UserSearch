@@ -3,6 +3,7 @@ package com.hunihun.usersearch.main
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -21,6 +22,8 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
     private val userAdapter by lazy {
         UserAdapter {
             binding.flSearchList.visibility = View.GONE
+            imm.hideSoftInputFromWindow(binding.etSearchWord.windowToken, 0)
+
             clearDataList()
             vm.getUserData(it)
         }
@@ -28,8 +31,7 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
 
     private val repoAdapter by lazy {
         RepoAdapter {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(it));
-            startActivity(intent);
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(it)))
         }
     }
 
@@ -44,18 +46,19 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
         binding.rvSearchList.run {
             adapter = userAdapter
             setHasFixedSize(true)
-            addOnScrollListener(scrollListener)
+            addOnScrollListener(userScrollListener)
         }
 
         binding.rvRepoList.run {
             adapter = repoAdapter
             setHasFixedSize(true)
-            addOnScrollListener(scrollListener)
+            addOnScrollListener(repoScrollListener)
         }
     }
 
     private fun initObserve() {
         vm.searchWord.observe(this) {
+            if (vm.page.loadingData) return@observe
             clearDataList()
             if (it.isEmpty()) {
                 userAdapter.notifyDataSetChanged()
@@ -85,10 +88,12 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
     private fun clearDataList() {
         vm.page.initialize()
         vm.tempUserList.clear()
+        vm.tempUserDetailDataList.clear()
         userAdapter.clearList()
+        repoAdapter.clearList()
     }
 
-    private var scrollListener: RecyclerView.OnScrollListener = object : RecyclerView.OnScrollListener() {
+    private var userScrollListener: RecyclerView.OnScrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             val visibleItemCount = recyclerView.childCount
             val totalItemCount = recyclerView.layoutManager!!.itemCount
@@ -99,6 +104,22 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
                 if (vm.page.isMorePage && !vm.page.loadingData) {
                     vm.page.addPageNo()
                     vm.searchUser()
+                }
+            }
+        }
+    }
+
+    private var repoScrollListener: RecyclerView.OnScrollListener = object : RecyclerView.OnScrollListener() {
+        override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+            val visibleItemCount = recyclerView.childCount
+            val totalItemCount = recyclerView.layoutManager!!.itemCount
+            val firstVisibleItemCount = (recyclerView.layoutManager as LinearLayoutManager?)!!.findFirstVisibleItemPosition()
+
+
+            if (firstVisibleItemCount + visibleItemCount == totalItemCount) {
+                if (vm.page.isMorePage && !vm.page.loadingData) {
+                    vm.page.addPageNo()
+                    vm.searchRepo()
                 }
             }
         }

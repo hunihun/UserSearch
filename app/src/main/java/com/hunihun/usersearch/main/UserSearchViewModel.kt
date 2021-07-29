@@ -36,6 +36,7 @@ class UserSearchViewModel @Inject constructor(
     val error: LiveData<String> = _error
 
     fun searchUser() {
+        if (page.loadingData) return
         startLoading()
         addDisposable(userSearchRepository.searchUser(searchWord.value, page.pageNo)
             .map {
@@ -56,9 +57,10 @@ class UserSearchViewModel @Inject constructor(
             }))
     }
 
-    fun searchRepo(userId: String) {
+    fun searchRepo() {
+        if (page.loadingData) return
         startLoading()
-        addDisposable(userSearchRepository.searchRepo(userId, page.pageNo)
+        addDisposable(userSearchRepository.searchRepo(searchWord.value, page.pageNo)
             .map {
                 if (it.isEmpty()) {
                     page.isMorePage = false
@@ -67,7 +69,8 @@ class UserSearchViewModel @Inject constructor(
                     val userDetailData = UserDetailData(
                         repoName = data.name,
                         starCount = data.stargazers_count,
-                        pushedAt = data.pushed_at
+                        pushedAt = data.pushed_at,
+                        repoUrl = data.html_url
                     )
                     tempUserDetailDataList.add(userDetailData)
                 }
@@ -84,8 +87,10 @@ class UserSearchViewModel @Inject constructor(
     }
 
     fun getUserData(userId: String) {
+        if (page.loadingData) return
         startLoading()
-        addDisposable(Observable.zip(
+        searchWord.value = userId
+            addDisposable(Observable.zip(
             // first api = search repository
             userSearchRepository.searchRepo(userId, page.pageNo)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -97,7 +102,8 @@ class UserSearchViewModel @Inject constructor(
                         val userDetailData = UserDetailData(
                             repoName = data.name,
                             starCount = data.stargazers_count,
-                            pushedAt = data.pushed_at
+                            pushedAt = data.pushed_at,
+                            repoUrl = data.html_url
                         )
                         tempUserDetailDataList.add(userDetailData)
                     }

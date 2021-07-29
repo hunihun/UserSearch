@@ -7,5 +7,6 @@ data class UserDetailData(
     val profilePath: String = "",
     val repoName: String = "",
     val starCount: Int = 0,
-    val pushedAt: String = ""
+    val pushedAt: String = "",
+    val repoUrl: String = ""
 )

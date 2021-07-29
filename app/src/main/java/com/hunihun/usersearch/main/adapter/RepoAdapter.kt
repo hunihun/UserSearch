@@ -10,7 +10,7 @@ import com.hunihun.usersearch.databinding.RepoItemBinding
 import com.hunihun.usersearch.databinding.UserProfileItemBinding
 import com.hunihun.usersearch.main.model.user.UserDetailData
 
-class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class RepoAdapter(private val itemClickListener: (link: String) -> Unit): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val itemList: ArrayList<UserDetailData> = ArrayList()
     private lateinit var binding: ViewDataBinding
 
@@ -65,6 +65,10 @@ class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): Re
         notifyDataSetChanged()
     }
 
+    fun clearList() {
+        itemList.clear()
+    }
+
     inner class RepoViewHolder(
             private val itemClickListener: (link: String) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -82,6 +86,7 @@ class RepoAdapter(private val itemClickListener: (userName: String) -> Unit): Re
                 data = item
                 executePendingBindings()
             }
+            link = item.repoUrl
         }
     }
 
