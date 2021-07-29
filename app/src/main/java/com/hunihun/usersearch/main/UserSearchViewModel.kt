@@ -107,10 +107,10 @@ class UserSearchViewModel @Inject constructor(
             userSearchRepository.getUserProfile(userId)
                 .map {
                     val userDetailData = UserDetailData(
-                        bio = it.bio,
-                        login = it.login,
-                        name = it.name,
-                        profilePath = it.avatar_url
+                        bio = it.bio?: "",
+                        login = it.login?: "",
+                        name = it.name?: "",
+                        profilePath = it.avatar_url?: ""
                     )
                     tempUserDetailDataList.add(0, userDetailData)
                 }
