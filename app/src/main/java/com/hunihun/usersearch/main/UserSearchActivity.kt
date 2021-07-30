@@ -15,16 +15,17 @@ import com.hunihun.usersearch.databinding.ActivityMainBinding
 import com.hunihun.usersearch.main.adapter.RepoAdapter
 import com.hunihun.usersearch.main.adapter.UserAdapter
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 @AndroidEntryPoint
 class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>(R.layout.activity_main) {
     override val vm : UserSearchViewModel by viewModels()
+    private var searchDelay: TimerTask? = null
+    private var isUserClick = false
     private val userAdapter by lazy {
         UserAdapter {
-            binding.flSearchList.visibility = View.GONE
-            imm.hideSoftInputFromWindow(binding.etSearchWord.windowToken, 0)
-
-            clearDataList()
+            isUserClick = true
+            binding.etSearchWord.setText(it)
             vm.getUserData(it)
         }
     }
@@ -58,24 +59,54 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
 
     private fun initObserve() {
         vm.searchWord.observe(this) {
-            if (vm.page.loadingData) return@observe
-            clearDataList()
+
+            // 사용자 리스트에서 선택했을 경우에는 조회 안되게 처리
+            if (isUserClick) {
+                isUserClick = false
+                return@observe
+            }
+            searchDelay?.cancel()
+            vm.clearDataList()
             if (it.isEmpty()) {
                 userAdapter.notifyDataSetChanged()
                 return@observe
             }
-            vm.searchUser()
+            // 0.2초 후에 검색한다.
+            searchDelay = object : TimerTask() {
+                override fun run() {
+                    try {
+                        runOnUiThread { vm.searchUser() }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+
+            val timer = Timer()
+            timer.schedule(searchDelay, 200)
         }
 
         vm.userList.observe(this) {
-            if (it.isEmpty()) return@observe
-            userAdapter.addList(it)
+            if (it.isEmpty()) {
+                vm.clearDataList()
+                userAdapter.notifyDataSetChanged()
+                return@observe
+            }
             binding.flSearchList.visibility = View.VISIBLE
+            userAdapter.addList(it)
         }
 
         vm.error.observe(this) {
-            if (it.contains("403")) {
-                Toast.makeText(this, R.string.error_403, Toast.LENGTH_SHORT).show()
+            when {
+                it.contains("403") -> {
+                    Toast.makeText(this, R.string.error_403, Toast.LENGTH_SHORT).show()
+                }
+                it.contains("404") -> {
+                    Toast.makeText(this, R.string.error_404, Toast.LENGTH_SHORT).show()
+                }
+                it.contains("401") -> {
+                    Toast.makeText(this, R.string.error_404, Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
@@ -83,14 +114,12 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
             if (it == null) return@observe
             repoAdapter.addList(it)
         }
-    }
 
-    private fun clearDataList() {
-        vm.page.initialize()
-        vm.tempUserList.clear()
-        vm.tempUserDetailDataList.clear()
-        userAdapter.clearList()
-        repoAdapter.clearList()
+        vm.selectEvent.observe(this) {
+            vm.clearDataList()
+            binding.flSearchList.visibility = View.GONE
+            imm.hideSoftInputFromWindow(binding.etSearchWord.windowToken, 0)
+        }
     }
 
     private var userScrollListener: RecyclerView.OnScrollListener = object : RecyclerView.OnScrollListener() {

@@ -65,10 +65,6 @@ class RepoAdapter(private val itemClickListener: (link: String) -> Unit): Recycl
         notifyDataSetChanged()
     }
 
-    fun clearList() {
-        itemList.clear()
-    }
-
     inner class RepoViewHolder(
             private val itemClickListener: (link: String) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {

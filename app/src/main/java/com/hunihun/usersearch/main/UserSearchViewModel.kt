@@ -5,8 +5,6 @@ import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.hunihun.usersearch.BaseViewModel
-import com.hunihun.usersearch.main.model.repo.ResponseGitHubRepoDataItem
-import com.hunihun.usersearch.main.model.user.ResponseUserDetailData
 import com.hunihun.usersearch.main.model.user.UserDetailData
 import com.hunihun.usersearch.main.model.user.UserListData
 import com.hunihun.usersearch.main.repository.UserSearchRepository
@@ -15,17 +13,17 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel
 class UserSearchViewModel @Inject constructor(
     private val userSearchRepository: UserSearchRepository
 ): BaseViewModel() {
-    val tempUserList = mutableListOf<UserListData>()
-    val tempUserDetailDataList = mutableListOf<UserDetailData>()
+    private val tempUserList = mutableListOf<UserListData>()
+    private val tempUserDetailDataList = mutableListOf<UserDetailData>()
     val searchWord = MutableLiveData("")
     var page = Pagination()
-
     private val _userList = MutableLiveData<List<UserListData>>()
     val userList: LiveData<List<UserListData>> = _userList
 
@@ -35,13 +33,19 @@ class UserSearchViewModel @Inject constructor(
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
+    private val _selectEvent = MutableLiveData<Unit>()
+    val selectEvent: LiveData<Unit> = _selectEvent
+
     fun searchUser() {
-        if (page.loadingData) return
         startLoading()
         addDisposable(userSearchRepository.searchUser(searchWord.value, page.pageNo)
             .map {
                 if (it.items.isEmpty()) {
                     page.isMorePage = false
+                }
+
+                if (page.pageNo == 1) {
+                    clearDataList()
                 }
                 tempUserList.addAll(it.items)
             }
@@ -51,10 +55,11 @@ class UserSearchViewModel @Inject constructor(
                 _userList.value = tempUserList
                 finishLoading()
             }, {
-                Log.d("jsh","error >>> " + it.message)
+                Log.d("jsh", "searchUser error >>> " + it.message)
                 _error.value = it.message
                 finishLoading()
-            }))
+            })
+        )
     }
 
     fun searchRepo() {
@@ -81,59 +86,59 @@ class UserSearchViewModel @Inject constructor(
                 _userDetailData.value = tempUserDetailDataList
                 finishLoading()
             }, {
-                Log.d("jsh","error >>> " + it.message)
+                Log.d("jsh", "searchRepo error >>> " + it.message)
                 finishLoading()
-            }))
+            })
+        )
     }
 
     fun getUserData(userId: String) {
-        if (page.loadingData) return
+        _selectEvent.value = Unit
         startLoading()
-        searchWord.value = userId
             addDisposable(Observable.zip(
-            // first api = search repository
-            userSearchRepository.searchRepo(userId, page.pageNo)
-                .observeOn(AndroidSchedulers.mainThread())
-                .map {
-                    if (it.isEmpty()) {
-                        page.isMorePage = false
+                // first api = search repository
+                userSearchRepository.searchRepo(userId, page.pageNo)
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .map {
+                        if (it.isEmpty()) {
+                            page.isMorePage = false
+                        }
+                        it.map { data ->
+                            val userDetailData = UserDetailData(
+                                repoName = data.name,
+                                starCount = data.stargazers_count,
+                                pushedAt = data.pushed_at,
+                                repoUrl = data.html_url
+                            )
+                            tempUserDetailDataList.add(userDetailData)
+                        }
                     }
-                    it.map { data ->
+                    .toObservable(),
+                // second api = get user profile data
+                userSearchRepository.getUserProfile(userId)
+                    .map {
                         val userDetailData = UserDetailData(
-                            repoName = data.name,
-                            starCount = data.stargazers_count,
-                            pushedAt = data.pushed_at,
-                            repoUrl = data.html_url
+                            bio = it.bio ?: "",
+                            login = it.login ?: "",
+                            name = it.name ?: "",
+                            profilePath = it.avatar_url ?: ""
                         )
-                        tempUserDetailDataList.add(userDetailData)
+                        tempUserDetailDataList.add(0, userDetailData)
                     }
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .toObservable(),
+                // result
+                { _: List<Boolean>, _: Unit ->
+                    _userDetailData.value = tempUserDetailDataList
+                    finishLoading()
                 }
-                .toObservable(),
-            // second api = get user profile data
-            userSearchRepository.getUserProfile(userId)
-                .map {
-                    val userDetailData = UserDetailData(
-                        bio = it.bio?: "",
-                        login = it.login?: "",
-                        name = it.name?: "",
-                        profilePath = it.avatar_url?: ""
-                    )
-                    tempUserDetailDataList.add(0, userDetailData)
+            ).subscribeOn(Schedulers.newThread())
+                .onErrorReturn {
+                    Log.d("jsh", "getUserData error >>> " + it.message)
+                    _error.value = it.message
+                    finishLoading()
                 }
-                .observeOn(AndroidSchedulers.mainThread())
-                .toObservable(),
-            // result
-            { _: List<Boolean>, _: Unit ->
-                _userDetailData.value = tempUserDetailDataList
-                finishLoading()
-            }
-        ).subscribeOn(Schedulers.newThread())
-            .onErrorReturn {
-                Log.d("jsh", "it.message >>> " + it.message)
-                _error.value = it.message
-                finishLoading()
-            }
-            .subscribe())
+                .subscribe())
     }
 
     private fun startLoading() {
@@ -144,5 +149,12 @@ class UserSearchViewModel @Inject constructor(
     private fun finishLoading() {
         page.loadingData = false
         progressVisible.value = View.GONE
+    }
+
+
+    fun clearDataList() {
+        page.initialize()
+        tempUserList.clear()
+        tempUserDetailDataList.clear()
     }
 }
