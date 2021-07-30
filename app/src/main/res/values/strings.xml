@@ -2,6 +2,7 @@
     <string name="app_name">UserSearch</string>
     <string name="git_token">token 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 </string>
     <string name="input_text">검색어를 입력해 주세요.</string>
+    <string name="last_update">마지막 업데이트: %1$s</string>
     <string name="error_403">요청이 너무 많습니다. 잠시후 다시 시도해주세요.</string>
     <string name="error_404">Not found</string>
     <string name="error_401">Invalid token</string>
