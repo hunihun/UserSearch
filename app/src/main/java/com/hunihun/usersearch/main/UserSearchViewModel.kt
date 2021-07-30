@@ -18,12 +18,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UserSearchViewModel @Inject constructor(
-    private val userSearchRepository: UserSearchRepository
+    private val userSearchRepository: UserSearchRepository,
+    val page: Pagination
 ): BaseViewModel() {
     private val tempUserList = mutableListOf<UserListData>()
     private val tempUserDetailDataList = mutableListOf<UserDetailData>()
     val searchWord = MutableLiveData("")
-    var page = Pagination()
     private val _userList = MutableLiveData<List<UserListData>>()
     val userList: LiveData<List<UserListData>> = _userList
 
