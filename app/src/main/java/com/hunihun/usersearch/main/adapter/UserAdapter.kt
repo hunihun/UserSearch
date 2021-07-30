@@ -36,6 +36,11 @@ class UserAdapter(private val itemClickListener: (userName: String) -> Unit): Re
         notifyDataSetChanged()
     }
 
+    fun clearData() {
+        itemList.clear()
+        notifyDataSetChanged()
+    }
+
     inner class UserViewHolder(
         private val binding: UserItemBinding,
         private val itemClickListener: (userName: String) -> Unit

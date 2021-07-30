@@ -72,7 +72,6 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
 
     private fun initObserve() {
         vm.searchWord.observe(this) {
-
             // 사용자 리스트에서 선택했을 경우에는 조회 안되게 처리
             if (isUserClick) {
                 isUserClick = false
@@ -81,7 +80,7 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
             searchDelay?.cancel()
             vm.clearDataList()
             if (it.isEmpty()) {
-                userAdapter.notifyDataSetChanged()
+                userAdapter.clearData()
                 return@observe
             }
             // 0.2초 후에 검색한다.
@@ -102,10 +101,9 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
         vm.userList.observe(this) {
             if (it.isEmpty()) {
                 vm.clearDataList()
-                userAdapter.notifyDataSetChanged()
-                return@observe
+            } else {
+                binding.flSearchList.visibility = View.VISIBLE
             }
-            binding.flSearchList.visibility = View.VISIBLE
             userAdapter.addList(it)
         }
 
@@ -124,7 +122,7 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
         }
 
         vm.userDetailData.observe(this) {
-            if (it == null) return@observe
+            if (it.isEmpty()) return@observe
             repoAdapter.addList(it)
         }
 

@@ -45,7 +45,7 @@ class UserSearchViewModel @Inject constructor(
                 }
 
                 if (page.pageNo == 1) {
-                    clearDataList()
+                    tempUserList.clear()
                 }
                 tempUserList.addAll(it.items)
             }
