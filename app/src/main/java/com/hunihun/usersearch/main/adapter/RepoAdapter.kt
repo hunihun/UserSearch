@@ -6,6 +6,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.recyclerview.widget.RecyclerView
 import com.hunihun.usersearch.R
+import com.hunihun.usersearch.databinding.EmptyViewBinding
 import com.hunihun.usersearch.databinding.RepoItemBinding
 import com.hunihun.usersearch.databinding.UserProfileItemBinding
 import com.hunihun.usersearch.main.model.user.UserDetailData
@@ -27,7 +28,7 @@ class RepoAdapter(private val itemClickListener: (link: String) -> Unit): Recycl
                 HeaderViewHolder()
             }
 
-            else -> {
+            BODY -> {
                 binding = DataBindingUtil.inflate<RepoItemBinding>(
                     LayoutInflater.from(parent.context),
                     R.layout.repo_item,
@@ -35,6 +36,16 @@ class RepoAdapter(private val itemClickListener: (link: String) -> Unit): Recycl
                     false
                 )
                 RepoViewHolder(itemClickListener)
+            }
+
+            else -> {
+                binding = DataBindingUtil.inflate<RepoItemBinding>(
+                    LayoutInflater.from(parent.context),
+                    R.layout.empty_view,
+                    parent,
+                    false
+                )
+                EmptyViewHolder()
             }
         }
     }
@@ -44,15 +55,21 @@ class RepoAdapter(private val itemClickListener: (link: String) -> Unit): Recycl
             HEADER -> {
                 (holder as HeaderViewHolder).bind(itemList[position])
             }
-
             BODY -> {
                 (holder as RepoViewHolder).bind(itemList[position])
+            }
+            EMPTY -> {
+                (holder as EmptyViewHolder).bind(itemList[position])
             }
         }
     }
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == 0) HEADER else BODY
+        return when {
+            itemList.size == 1 -> EMPTY
+            position == 0 -> HEADER
+            else -> BODY
+        }
     }
 
     override fun getItemCount(): Int {
@@ -97,8 +114,20 @@ class RepoAdapter(private val itemClickListener: (link: String) -> Unit): Recycl
         }
     }
 
+    inner class EmptyViewHolder : RecyclerView.ViewHolder(binding.root) {
+        private var emptyBinding: EmptyViewBinding = binding as EmptyViewBinding
+
+        fun bind(item: UserDetailData) {
+            emptyBinding.run {
+                data = item
+                executePendingBindings()
+            }
+        }
+    }
+
     companion object {
         const val HEADER = 1
         const val BODY = 2
+        const val EMPTY = 3
     }
 }
