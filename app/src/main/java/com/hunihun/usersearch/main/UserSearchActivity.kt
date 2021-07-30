@@ -3,13 +3,13 @@ package com.hunihun.usersearch.main
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hunihun.usersearch.BaseActivity
@@ -44,7 +44,18 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
 
         initAdapter()
         initObserve()
+        initListener()
+    }
 
+    override fun onBackPressed() {
+        if (binding.flSearchList.isVisible) {
+            binding.flSearchList.visibility = View.GONE
+            return
+        }
+        super.onBackPressed()
+    }
+
+    private fun initListener() {
         binding.etSearchWord.setOnEditorActionListener(object : TextView.OnEditorActionListener {
             override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
