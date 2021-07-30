@@ -1,4 +1,4 @@
-package com.hunihun.usersearch
+package com.hunihun.usersearch.base
 
 import android.view.View
 import androidx.lifecycle.MutableLiveData

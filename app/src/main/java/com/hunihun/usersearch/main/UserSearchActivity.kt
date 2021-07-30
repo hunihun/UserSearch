@@ -12,7 +12,7 @@ import androidx.activity.viewModels
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.hunihun.usersearch.BaseActivity
+import com.hunihun.usersearch.base.BaseActivity
 import com.hunihun.usersearch.R
 import com.hunihun.usersearch.databinding.ActivityMainBinding
 import com.hunihun.usersearch.main.adapter.RepoAdapter

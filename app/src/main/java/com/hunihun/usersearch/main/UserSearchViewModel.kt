@@ -4,7 +4,7 @@ import android.util.Log
 import android.view.View
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.hunihun.usersearch.BaseViewModel
+import com.hunihun.usersearch.base.BaseViewModel
 import com.hunihun.usersearch.main.model.user.UserDetailData
 import com.hunihun.usersearch.main.model.user.UserListData
 import com.hunihun.usersearch.main.repository.UserSearchRepository
@@ -13,7 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.util.*
 import javax.inject.Inject
 
 @HiltViewModel

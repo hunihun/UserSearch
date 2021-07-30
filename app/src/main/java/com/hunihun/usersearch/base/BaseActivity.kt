@@ -1,4 +1,4 @@
-package com.hunihun.usersearch
+package com.hunihun.usersearch.base
 
 import android.content.Context
 import android.os.Bundle
@@ -6,6 +6,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import com.hunihun.usersearch.BR
 
 abstract class BaseActivity<B: ViewDataBinding, VM: BaseViewModel>(
     private val layoutId: Int
