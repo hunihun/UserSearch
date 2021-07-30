@@ -39,6 +39,8 @@
                 android:textColor="@color/git_primary"
                 android:textColorHint="@color/color_hint"
                 android:text="@={vm.searchWord}"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toLeftOf="@+id/iv_search" />

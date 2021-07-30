@@ -93,6 +93,7 @@ class UserSearchViewModel @Inject constructor(
     }
 
     fun getUserData(userId: String) {
+        if (userId.isEmpty()) return
         _selectEvent.value = Unit
         startLoading()
             addDisposable(Observable.zip(

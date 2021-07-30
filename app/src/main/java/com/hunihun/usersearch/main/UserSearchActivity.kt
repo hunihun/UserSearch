@@ -4,7 +4,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,6 +44,16 @@ class UserSearchActivity: BaseActivity<ActivityMainBinding, UserSearchViewModel>
 
         initAdapter()
         initObserve()
+
+        binding.etSearchWord.setOnEditorActionListener(object : TextView.OnEditorActionListener {
+            override fun onEditorAction(v: TextView?, actionId: Int, event: KeyEvent?): Boolean {
+                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                    vm.getUserData(vm.searchWord.value!!)
+                    return true
+                }
+                return false
+            }
+        })
     }
 
     private fun initAdapter() {
